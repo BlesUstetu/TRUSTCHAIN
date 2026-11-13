@@ -229,7 +229,7 @@ for select to authenticated using (public.is_org_member(organization_id));
 create policy "admins can insert projects" on public.projects
 for insert to authenticated with check (
   exists (select 1 from public.organization_members m
-    where m.organization_id = organization_id and m.user_id = auth.uid()
+    where m.organization_id = projects.organization_id and m.user_id = auth.uid()
       and m.role in ('owner','admin'))
 );
 create policy "admins can update projects" on public.projects
