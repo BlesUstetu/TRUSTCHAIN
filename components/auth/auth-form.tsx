@@ -6,6 +6,23 @@ import { FormEvent, useState } from "react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 type AuthMode = "login" | "signup";
+type OAuthProvider = "google" | "github" | "discord";
+
+const providers: { id: OAuthProvider; label: string; mark: string }[] = [
+  { id: "google", label: "Google", mark: "G" },
+  { id: "github", label: "GitHub", mark: "GH" },
+  { id: "discord", label: "Discord", mark: "D" }
+];
+
+function safeNextPath(value: string | null) {
+  if (!value || !value.startsWith("/") || value.startsWith("//") || value.includes("\\")) return "/";
+  try {
+    const target = new URL(value, window.location.origin);
+    return target.origin === window.location.origin ? target.pathname + target.search + target.hash : "/";
+  } catch {
+    return "/";
+  }
+}
 
 export function AuthForm({ mode }: { mode: AuthMode }) {
   const router = useRouter();
@@ -13,8 +30,28 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
+  const [oauthBusy, setOauthBusy] = useState<OAuthProvider | null>(null);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+
+  async function handleOAuth(provider: OAuthProvider) {
+    setOauthBusy(provider);
+    setError("");
+    setNotice("");
+    try {
+      const supabase = createSupabaseBrowserClient();
+      const redirectTo = new URL("/auth/callback", window.location.origin);
+      redirectTo.searchParams.set("next", safeNextPath(searchParams.get("next")));
+      const { error: authError } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: { redirectTo: redirectTo.toString() }
+      });
+      if (authError) throw authError;
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Social sign-in could not be started.");
+      setOauthBusy(null);
+    }
+  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -30,9 +67,7 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
           password
         });
         if (authError) throw authError;
-        const next = searchParams.get("next");
-        const safeNext = next?.startsWith("/") && !next.startsWith("//") ? next : "/";
-        router.replace(safeNext);
+        router.replace(safeNextPath(searchParams.get("next")));
         router.refresh();
       } else {
         const { data, error: authError } = await supabase.auth.signUp({
@@ -57,6 +92,8 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
     }
   }
 
+  const isBusy = busy || oauthBusy !== null;
+
   return (
     <main className="auth-page">
       <section className="auth-card">
@@ -71,6 +108,23 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
             ? "Sign in to access your project intelligence workspace."
             : "Start organizing project evidence and on-chain transparency."}
         </p>
+
+        <div className="oauth-stack" aria-label="Continue with a social account">
+          {providers.map((provider) => (
+            <button
+              key={provider.id}
+              className="oauth-button"
+              type="button"
+              onClick={() => handleOAuth(provider.id)}
+              disabled={isBusy}
+            >
+              <span className={`oauth-mark oauth-mark-${provider.id}`} aria-hidden="true">{provider.mark}</span>
+              {oauthBusy === provider.id ? "Redirecting…" : `Continue with ${provider.label}`}
+            </button>
+          ))}
+        </div>
+
+        <div className="auth-divider"><span>or continue with email</span></div>
 
         <form onSubmit={handleSubmit} className="auth-form">
           <label htmlFor="email">Email address</label>
@@ -96,7 +150,7 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
           />
           {error && <p className="auth-error" role="alert">{error}</p>}
           {notice && <p className="auth-notice" role="status">{notice}</p>}
-          <button className="button auth-submit" type="submit" disabled={busy}>
+          <button className="button auth-submit" type="submit" disabled={isBusy}>
             {busy ? "Please wait…" : mode === "login" ? "Sign in" : "Create account"}
           </button>
         </form>
