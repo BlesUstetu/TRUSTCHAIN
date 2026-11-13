@@ -1,3 +1,4 @@
+import { SignOutButton } from "@/components/auth/sign-out-button";
 import {
   Activity, Bell, Blocks, Check, ChevronRight, Clock3, FileCheck2, Fingerprint,
   LayoutDashboard, LockKeyhole, Radar, Settings2, ShieldCheck, Wallet, Waves,
@@ -64,7 +65,8 @@ export default function Home() {
           </div>
           <div className="flex items-center gap-3">
             <span className="pill"><span className="dot"/> Base network</span>
-            <span className="pill">Authenticated preview</span>\n            <SignOutButton />
+            <span className="pill">Authenticated preview</span>
+            <SignOutButton />
           </div>
         </header>
 
