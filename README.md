@@ -10,14 +10,14 @@ Trustchain is an independent application with its own repository, Supabase proje
 
 The repository currently includes:
 - Next.js 15 / React 19 / TypeScript / Tailwind dashboard preview.
-- Supabase browser client foundation and initial multi-tenant schema.
+- Supabase browser/server clients with cookie-based SSR session refresh, email/password sign-in, sign-up confirmation callback, and protected dashboard routing.
 - Read-only Base bytecode-presence helper using viem.
 - Project input validation and GitHub Actions CI.
 - Final multi-chain / hybrid-verification implementation blueprint.
 - API v1 contract and security model documentation.
 - Supabase migration 0002 for EVM chain registry, project networks, verification runs/reviews, public passport snapshots, worker cursors/jobs, and audit logs.
 
-The dashboard still contains illustrative demo metrics. Production authentication, project CRUD, live indexing, verification workflows, notifications, public passport publishing, and billing are not complete.
+The dashboard still contains illustrative demo metrics. Project CRUD, organization onboarding, live indexing, verification workflows, notifications, public passport publishing, and billing are not complete. Authentication requires a dedicated Supabase project and redirect configuration.
 
 ## Architecture decisions
 
