@@ -64,7 +64,7 @@ export default function Home() {
           </div>
           <div className="flex items-center gap-3">
             <span className="pill"><span className="dot"/> Base network</span>
-            <button className="button"><span className="inline-flex items-center gap-2"><Blocks size={14}/> Add project</span></button>
+            <span className="pill">Preview · onboarding next</span>
           </div>
         </header>
 
