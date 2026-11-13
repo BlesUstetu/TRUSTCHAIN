@@ -176,38 +176,38 @@ create or replace function public.is_org_admin(target_org uuid)
 returns boolean
 language sql stable security definer
 set search_path = ''
-as $
+as $$
   select exists (
     select 1 from public.organization_members m
     where m.organization_id = target_org
       and m.user_id = (select auth.uid())
       and m.role in ('owner','admin')
   );
-$;
+$$;
 
 create or replace function public.is_org_reviewer(target_org uuid)
 returns boolean
 language sql stable security definer
 set search_path = ''
-as $
+as $$
   select exists (
     select 1 from public.organization_members m
     where m.organization_id = target_org
       and m.user_id = (select auth.uid())
       and m.role in ('owner','admin','reviewer')
   );
-$;
+$$;
 
 create or replace function public.is_public_project(target_project uuid)
 returns boolean
 language sql stable security definer
 set search_path = ''
-as $
+as $$
   select exists (
     select 1 from public.projects p
     where p.id = target_project and p.visibility = 'public'
   );
-$;
+$$;
 
 revoke all on function public.is_org_admin(uuid) from public;
 revoke all on function public.is_org_reviewer(uuid) from public;
@@ -216,11 +216,9 @@ grant execute on function public.is_org_admin(uuid) to authenticated;
 grant execute on function public.is_org_reviewer(uuid) to authenticated;
 grant execute on function public.is_public_project(uuid) to anon, authenticated;
 
-drop policy "members read verification reviews" on public.verification_reviews;
 create policy "reviewers read verification reviews" on public.verification_reviews
 for select to authenticated using (public.is_org_reviewer(organization_id));
 
-drop policy "members read audit logs" on public.audit_logs;
 create policy "admins read audit logs" on public.audit_logs
 for select to authenticated using (public.is_org_admin(organization_id));
 
