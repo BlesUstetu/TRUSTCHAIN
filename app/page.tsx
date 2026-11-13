@@ -64,7 +64,7 @@ export default function Home() {
           </div>
           <div className="flex items-center gap-3">
             <span className="pill"><span className="dot"/> Base network</span>
-            <span className="pill">Preview · onboarding next</span>
+            <span className="pill">Authenticated preview</span>\n            <SignOutButton />
           </div>
         </header>
 
