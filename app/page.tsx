@@ -1,8 +1,7 @@
 import {
-  Activity, ArrowDownRight, ArrowUpRight, Bell, Blocks, Check,
-  ChevronRight, CircleHelp, Clock3, FileCheck2, Fingerprint,
-  LayoutDashboard, LockKeyhole, Radar, ScanSearch, Settings2,
-  ShieldCheck, Wallet, Waves
+  Activity, Bell, Blocks, Check, ChevronRight, Clock3, FileCheck2, Fingerprint,
+  LayoutDashboard, LockKeyhole, Radar, Settings2, ShieldCheck, Wallet, Waves,
+  type LucideIcon
 } from "lucide-react";
 
 const projects = [
@@ -12,12 +11,12 @@ const projects = [
 ];
 
 const evidence = [
-  { icon: Check, title: "Contract source verified", detail: "Northstar Protocol · Base · 4 min ago", status: "Observed" },
+  { icon: Check, title: "Contract bytecode observed", detail: "Northstar Protocol · Base · 4 min ago", status: "Observed" },
   { icon: Wallet, title: "Treasury wallet registered", detail: "Orbit Finance · Project-reported · 18 min ago", status: "Reported" },
   { icon: Activity, title: "Token supply snapshot updated", detail: "Cedar Network · Base · 1 hour ago", status: "Observed" }
 ];
 
-function NavItem({ icon: Icon, label, active = false }: { icon: React.ElementType; label: string; active?: boolean }) {
+function NavItem({ icon: Icon, label, active = false }: { icon: LucideIcon; label: string; active?: boolean }) {
   return <a className={`nav-item ${active ? "active" : ""}`} href={active ? "/" : "#"}><Icon size={16} strokeWidth={1.7}/>{label}</a>;
 }
 
@@ -80,7 +79,7 @@ export default function Home() {
         <section className="grid-stats">
           <div className="stat-card"><div className="stat-label flex items-center gap-2"><Blocks size={14}/> Projects tracked</div><div className="stat-value">03</div><div className="stat-foot">Demo workspace data</div></div>
           <div className="stat-card"><div className="stat-label flex items-center gap-2"><FileCheck2 size={14}/> Evidence records</div><div className="stat-value">128</div><div className="stat-foot">Illustrative records</div></div>
-          <div className="stat-card"><div className="stat-label flex items-center gap-2"><Activity size={14}/> Monitoring checks</div><div className="stat-value">96.8%</div><div className="stat-foot">Demo completion rate</div></div>
+          <div className="stat-card"><div className="stat-label flex items-center gap-2"><Activity size={14}/> Monitoring checks</div><div className="stat-value">96.8%</div><div className="stat-foot">Illustrative monitoring metric</div></div>
           <div className="stat-card"><div className="stat-label flex items-center gap-2"><Bell size={14}/> Open alerts</div><div className="stat-value">02</div><div className="stat-foot">Illustrative alert count</div></div>
         </section>
 
