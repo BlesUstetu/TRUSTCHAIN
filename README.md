@@ -85,10 +85,12 @@ After the dedicated Trustchain Supabase project exists:
 2. Enable Google, GitHub, and Discord individually.
 3. Create an OAuth application in each provider's developer console and enter its Client ID and Client Secret in that provider's Supabase settings. Keep all client secrets in Supabase; never place them in frontend environment variables.
 4. In each provider's OAuth application, register the Supabase callback URL shown in the provider settings. It normally follows this format: `https://<project-ref>.supabase.co/auth/v1/callback`.
-5. In **Authentication → URL Configuration**, set the production Site URL and add allowed redirect URLs:
-   - `http://localhost:3000/auth/callback`
-   - `https://<your-trustchain-domain>/auth/callback`
-   - Add the exact Vercel preview callback patterns only if preview deployments will be used.
+5. In **Authentication → URL Configuration**, use these Trustchain production values:
+   - Site URL: `https://trustchain-delta.vercel.app`
+   - Allowed redirect URL: `https://trustchain-delta.vercel.app/auth/callback`
+   - Local development: `http://localhost:3000/auth/callback`
+   - Add exact Vercel preview callback patterns only if preview deployments will be used.
+6. The Supabase project ref is `sesijxvpfuimcyaibqgk`; the provider callback URL to register with Google, GitHub, and Discord is `https://sesijxvpfuimcyaibqgk.supabase.co/auth/v1/callback`.
 
 The app calls `signInWithOAuth` and returns through `/auth/callback`. OAuth provider credentials and allow-list settings are still pending; the buttons will show a provider/configuration error until the dedicated Supabase project is configured.
 
