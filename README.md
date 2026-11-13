@@ -10,14 +10,14 @@ Trustchain is an independent application with its own repository, Supabase proje
 
 The repository currently includes:
 - Next.js 15 / React 19 / TypeScript / Tailwind dashboard preview.
-- Supabase browser/server clients with cookie-based SSR session refresh, email/password sign-in, sign-up confirmation callback, and protected dashboard routing.
+- Supabase browser/server clients with cookie-based SSR session refresh, email/password sign-in, Google/GitHub/Discord OAuth sign-in flows, email confirmation callback, and protected dashboard routing.
 - Read-only Base bytecode-presence helper using viem.
 - Project input validation and GitHub Actions CI.
 - Final multi-chain / hybrid-verification implementation blueprint.
 - API v1 contract and security model documentation.
 - Supabase migration 0002 for EVM chain registry, project networks, verification runs/reviews, public passport snapshots, worker cursors/jobs, and audit logs.
 
-The dashboard still contains illustrative demo metrics. Project CRUD, organization onboarding, live indexing, verification workflows, notifications, public passport publishing, and billing are not complete. Authentication requires a dedicated Supabase project and redirect configuration.
+The dashboard still contains illustrative demo metrics. Project CRUD, organization onboarding, live indexing, verification workflows, notifications, public passport publishing, and billing are not complete. Authentication requires a dedicated Supabase project, enabled OAuth providers, provider credentials, and redirect configuration.
 
 ## Architecture decisions
 
@@ -49,7 +49,7 @@ Open http://localhost:3000.
 
 Public:
 - NEXT_PUBLIC_SUPABASE_URL
-- NEXT_PUBLIC_SUPABASE_ANON_KEY
+- NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY (preferred) or NEXT_PUBLIC_SUPABASE_ANON_KEY (legacy)
 - NEXT_PUBLIC_APP_URL
 
 Server-only:
@@ -76,6 +76,21 @@ Create a dedicated Trustchain Supabase project. Apply migrations in order:
 2. supabase/migrations/0002_multichain_hybrid_verification.sql
 
 Do not apply these migrations to UStetu's database. The service-role key must remain server-side. Keep RLS enabled; do not disable policies to make the preview work.
+
+### Enable social sign-in
+
+After the dedicated Trustchain Supabase project exists:
+
+1. In Supabase Dashboard, open **Authentication → Sign In / Providers**.
+2. Enable Google, GitHub, and Discord individually.
+3. Create an OAuth application in each provider's developer console and enter its Client ID and Client Secret in that provider's Supabase settings. Keep all client secrets in Supabase; never place them in frontend environment variables.
+4. In each provider's OAuth application, register the Supabase callback URL shown in the provider settings. It normally follows this format: `https://<project-ref>.supabase.co/auth/v1/callback`.
+5. In **Authentication → URL Configuration**, set the production Site URL and add allowed redirect URLs:
+   - `http://localhost:3000/auth/callback`
+   - `https://<your-trustchain-domain>/auth/callback`
+   - Add the exact Vercel preview callback patterns only if preview deployments will be used.
+
+The app calls `signInWithOAuth` and returns through `/auth/callback`. OAuth provider credentials and allow-list settings are still pending; the buttons will show a provider/configuration error until the dedicated Supabase project is configured.
 
 ## Verification limitations
 
