@@ -9,8 +9,18 @@ export async function updateSupabaseSession(request: NextRequest) {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
   if (!url || !key) {
-    // Allow the public preview to render before a dedicated Supabase project is configured.
-    return response;
+    const pathname = request.nextUrl.pathname;
+    const isAuthRoute =
+      pathname.startsWith("/login") ||
+      pathname.startsWith("/signup") ||
+      pathname.startsWith("/auth/callback");
+
+    if (isAuthRoute) return response;
+
+    const loginUrl = request.nextUrl.clone();
+    loginUrl.pathname = "/login";
+    loginUrl.searchParams.set("error", "configuration");
+    return NextResponse.redirect(loginUrl);
   }
 
   const supabase = createServerClient(url, key, {
