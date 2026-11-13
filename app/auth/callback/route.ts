@@ -1,13 +1,20 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
+function getSafeRedirectPath(value: string | null) {
+  if (!value || !value.startsWith("/") || value.startsWith("//") || value.includes("\\")) return "/";
+  try {
+    const target = new URL(value, "https://trustchain.invalid");
+    return target.origin === "https://trustchain.invalid" ? target.pathname + target.search + target.hash : "/";
+  } catch {
+    return "/";
+  }
+}
+
 export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url);
   const code = requestUrl.searchParams.get("code");
-  const requestedNext = requestUrl.searchParams.get("next");
-  const next = requestedNext?.startsWith("/") && !requestedNext.startsWith("//")
-    ? requestedNext
-    : "/";
+  const next = getSafeRedirectPath(requestUrl.searchParams.get("next"));
 
   if (code) {
     const supabase = await createSupabaseServerClient();
