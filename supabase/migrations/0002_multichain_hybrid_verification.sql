@@ -171,20 +171,76 @@ create policy "members read project networks" on public.project_networks
 for select to authenticated using (public.is_org_member(organization_id));
 create policy "members read verification runs" on public.verification_runs
 for select to authenticated using (public.is_org_member(organization_id));
-create policy "members read verification reviews" on public.verification_reviews
-for select to authenticated using (public.is_org_member(organization_id));
-create policy "members read audit logs" on public.audit_logs
-for select to authenticated using (public.is_org_member(organization_id));
+-- Role-aware helpers run with the function owner's privileges and expose only booleans.
+create or replace function public.is_org_admin(target_org uuid)
+returns boolean
+language sql stable security definer
+set search_path = ''
+as $
+  select exists (
+    select 1 from public.organization_members m
+    where m.organization_id = target_org
+      and m.user_id = (select auth.uid())
+      and m.role in ('owner','admin')
+  );
+$;
 
--- Public reads are restricted to a curated snapshot and a public parent project.
+create or replace function public.is_org_reviewer(target_org uuid)
+returns boolean
+language sql stable security definer
+set search_path = ''
+as $
+  select exists (
+    select 1 from public.organization_members m
+    where m.organization_id = target_org
+      and m.user_id = (select auth.uid())
+      and m.role in ('owner','admin','reviewer')
+  );
+$;
+
+create or replace function public.is_public_project(target_project uuid)
+returns boolean
+language sql stable security definer
+set search_path = ''
+as $
+  select exists (
+    select 1 from public.projects p
+    where p.id = target_project and p.visibility = 'public'
+  );
+$;
+
+revoke all on function public.is_org_admin(uuid) from public;
+revoke all on function public.is_org_reviewer(uuid) from public;
+revoke all on function public.is_public_project(uuid) from public;
+grant execute on function public.is_org_admin(uuid) to authenticated;
+grant execute on function public.is_org_reviewer(uuid) to authenticated;
+grant execute on function public.is_public_project(uuid) to anon, authenticated;
+
+drop policy "members read verification reviews" on public.verification_reviews;
+create policy "reviewers read verification reviews" on public.verification_reviews
+for select to authenticated using (public.is_org_reviewer(organization_id));
+
+drop policy "members read audit logs" on public.audit_logs;
+create policy "admins read audit logs" on public.audit_logs
+for select to authenticated using (public.is_org_admin(organization_id));
+
+-- API key hashes and billing identifiers must not be readable by ordinary members.
+drop policy "api_keys_member_select" on public.api_keys;
+create policy "admins read api keys" on public.api_keys
+for select to authenticated using (public.is_org_admin(organization_id));
+
+drop policy "subscriptions_member_select" on public.subscriptions;
+create policy "admins read subscriptions" on public.subscriptions
+for select to authenticated using (public.is_org_admin(organization_id));
+
+drop policy "usage_metrics_member_select" on public.usage_metrics;
+create policy "admins read usage metrics" on public.usage_metrics
+for select to authenticated using (public.is_org_admin(organization_id));
+
+-- Public reads are restricted to curated snapshots and a public parent project.
 create policy "published passport snapshots are public" on public.public_passport_snapshots
 for select to anon, authenticated using (
-  is_published = true
-  and exists (
-    select 1 from public.projects p
-    where p.id = public_passport_snapshots.project_id
-      and p.visibility = 'public'
-  )
+  is_published = true and public.is_public_project(project_id)
 );
 
 -- indexer_cursors and monitoring_jobs intentionally have no anon/authenticated policies.
