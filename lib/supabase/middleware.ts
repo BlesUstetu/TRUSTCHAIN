@@ -2,8 +2,11 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 function isAuthRoute(pathname: string) {
-  return pathname.startsWith("/login") || pathname.startsWith("/signup") ||
-    pathname.startsWith("/auth/callback") || pathname.startsWith("/api/auth/siwe");
+  return pathname === "/login" || pathname.startsWith("/login/") ||
+    pathname === "/signup" || pathname.startsWith("/signup/") ||
+    pathname === "/auth/callback" || pathname.startsWith("/auth/callback/") ||
+    pathname === "/auth/confirm" || pathname.startsWith("/auth/confirm/") ||
+    pathname.startsWith("/api/auth/siwe");
 }
 
 export async function updateSupabaseSession(request: NextRequest) {
