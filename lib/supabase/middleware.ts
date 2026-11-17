@@ -1,22 +1,19 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+function isAuthRoute(pathname: string) {
+  return pathname.startsWith("/login") || pathname.startsWith("/signup") ||
+    pathname.startsWith("/auth/callback") || pathname.startsWith("/api/auth/siwe");
+}
+
 export async function updateSupabaseSession(request: NextRequest) {
   let response = NextResponse.next({ request });
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key =
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ??
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const pathname = request.nextUrl.pathname;
 
   if (!url || !key) {
-    const pathname = request.nextUrl.pathname;
-    const isAuthRoute =
-      pathname.startsWith("/login") ||
-      pathname.startsWith("/signup") ||
-      pathname.startsWith("/auth/callback");
-
-    if (isAuthRoute) return response;
-
+    if (isAuthRoute(pathname)) return response;
     const loginUrl = request.nextUrl.clone();
     loginUrl.pathname = "/login";
     loginUrl.searchParams.set("error", "configuration");
@@ -25,28 +22,19 @@ export async function updateSupabaseSession(request: NextRequest) {
 
   const supabase = createServerClient(url, key, {
     cookies: {
-      getAll() {
-        return request.cookies.getAll();
-      },
-      setAll(cookiesToSet: Array<{ name: string; value: string; options?: Parameters<typeof response.cookies.set>[2] }>) {
-        cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
+      getAll() { return request.cookies.getAll(); },
+      setAll(values: Array<{ name: string; value: string; options?: Parameters<typeof response.cookies.set>[2] }>) {
+        values.forEach(({ name, value }) => request.cookies.set(name, value));
         response = NextResponse.next({ request });
-        cookiesToSet.forEach(({ name, value, options }) => {
-          response.cookies.set(name, value, options);
-        });
+        values.forEach(({ name, value, options }) => response.cookies.set(name, value, options));
       }
     }
   });
 
   const { data, error } = await supabase.auth.getClaims();
   const isAuthenticated = !error && Boolean(data?.claims);
-  const pathname = request.nextUrl.pathname;
-  const isAuthRoute =
-    pathname.startsWith("/login") ||
-    pathname.startsWith("/signup") ||
-    pathname.startsWith("/auth/callback");
 
-  if (!isAuthenticated && !isAuthRoute) {
+  if (!isAuthenticated && !isAuthRoute(pathname)) {
     const loginUrl = request.nextUrl.clone();
     loginUrl.pathname = "/login";
     loginUrl.searchParams.set("next", pathname);

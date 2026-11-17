@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FormEvent, useState } from "react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { WalletLoginButton } from "@/components/auth/wallet-login-button";
 
 type AuthMode = "login" | "signup";
 type OAuthProvider = "google" | "github" | "discord";
@@ -29,10 +30,20 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
   const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [busy, setBusy] = useState(false);
   const [oauthBusy, setOauthBusy] = useState<OAuthProvider | null>(null);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const initialError = searchParams.get("error");
+  const initialErrorMessage =
+    initialError === "configuration"
+      ? "Authentication is not configured yet. Please contact the administrator."
+      : initialError === "confirmation"
+        ? "The confirmation link is invalid or expired. Request a new email and try again."
+        : initialError
+          ? "Sign-in could not be completed. Please try again."
+          : "";
 
   async function handleOAuth(provider: OAuthProvider) {
     setOauthBusy(provider);
@@ -50,6 +61,32 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Social sign-in could not be started.");
       setOauthBusy(null);
+    }
+  }
+
+  async function handleForgotPassword() {
+    if (!email.trim()) {
+      setError("Enter your email address first. We will send a password reset link to that address.");
+      setNotice("");
+      return;
+    }
+
+    setBusy(true);
+    setError("");
+    setNotice("");
+    try {
+      const supabase = createSupabaseBrowserClient();
+      const redirectTo = new URL("/auth/confirm", window.location.origin);
+      redirectTo.searchParams.set("next", "/reset-password");
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+        redirectTo: redirectTo.toString()
+      });
+      if (resetError) throw resetError;
+      setNotice("If an account exists for this email, a password reset link has been sent. Check your inbox.");
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Could not send the password reset email.");
+    } finally {
+      setBusy(false);
     }
   }
 
@@ -109,6 +146,8 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
             : "Start organizing project evidence and on-chain transparency."}
         </p>
 
+        {initialErrorMessage && <p className="auth-error auth-url-message" role="alert">{initialErrorMessage}</p>}
+
         <div className="oauth-stack" aria-label="Continue with a social account">
           {providers.map((provider) => (
             <button
@@ -124,6 +163,8 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
           ))}
         </div>
 
+        <WalletLoginButton />
+
         <div className="auth-divider"><span>or continue with email</span></div>
 
         <form onSubmit={handleSubmit} className="auth-form">
@@ -138,16 +179,32 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
             placeholder="you@company.com"
           />
           <label htmlFor="password">Password</label>
-          <input
-            id="password"
-            type="password"
-            autoComplete={mode === "login" ? "current-password" : "new-password"}
-            minLength={8}
-            required
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            placeholder="At least 8 characters"
-          />
+          <div className="auth-password-row">
+            <input
+              id="password"
+              type={showPassword ? "text" : "password"}
+              autoComplete={mode === "login" ? "current-password" : "new-password"}
+              minLength={8}
+              required
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              placeholder="At least 8 characters"
+            />
+            <button
+              className="password-toggle"
+              type="button"
+              onClick={() => setShowPassword((visible) => !visible)}
+              aria-label={showPassword ? "Hide password" : "Show password"}
+              aria-pressed={showPassword}
+            >
+              {showPassword ? "Hide" : "Show"}
+            </button>
+          </div>
+          {mode === "login" && (
+            <button className="forgot-password" type="button" onClick={handleForgotPassword} disabled={isBusy}>
+              Forgot password?
+            </button>
+          )}
           {error && <p className="auth-error" role="alert">{error}</p>}
           {notice && <p className="auth-notice" role="status">{notice}</p>}
           <button className="button auth-submit" type="submit" disabled={isBusy}>
