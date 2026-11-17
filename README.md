@@ -16,9 +16,9 @@ The repository currently includes:
 - Project input validation and GitHub Actions CI.
 - Final multi-chain / hybrid-verification implementation blueprint.
 - API v1 contract and security model documentation.
-- Supabase migrations 0001–0004 for the core schema, EVM chain registry, verification/review tables, security grants, and secure initial organization onboarding.
+- Supabase migrations 0001–0005 for the core schema, EVM chain registry, verification/review tables, security grants, organization onboarding, tenant-policy correction, and server-only SIWE nonce storage.
 
-The dashboard still contains illustrative demo metrics. Organization onboarding is implemented in the current feature branch. Project CRUD, team invitations/management, live indexing, verification workflows, notifications, public passport publishing, and billing are not complete. Email/social authentication requires Supabase provider configuration. Wallet authentication additionally requires the server-only service-role key and WALLET_AUTH_SECRET to be configured in Vercel.
+The dashboard still contains illustrative demo metrics. Organization onboarding is implemented in the current feature branch. Project CRUD, team invitations/management, live indexing, verification workflows, notifications, public passport publishing, and billing are not complete. Email/social authentication requires Supabase provider configuration. Wallet authentication additionally requires the dedicated server-only Supabase secret key in Vercel.
 
 ## Architecture decisions
 
@@ -55,7 +55,6 @@ Public:
 
 Server-only:
 - SUPABASE_SECRET_KEY (preferred) or SUPABASE_SERVICE_ROLE_KEY (legacy)
-- WALLET_AUTH_SECRET (minimum 32 characters; stable across deployments)
 - BASE_RPC_URL
 - ETHEREUM_RPC_URL
 - BNB_RPC_URL
@@ -78,6 +77,7 @@ Create a dedicated Trustchain Supabase project. Apply migrations in order:
 2. supabase/migrations/0002_multichain_hybrid_verification.sql
 3. supabase/migrations/0003_security_hardening_function_grants.sql
 4. supabase/migrations/0004_organization_onboarding.sql
+5. supabase/migrations/0005_security_audit_remediation.sql
 
 Do not apply these migrations to UStetu's database. The service-role key must remain server-side. Keep RLS enabled; do not disable policies to make the preview work.
 
@@ -125,10 +125,9 @@ Proprietary until a license is explicitly added.
 
 The login page includes a wallet option for injected EVM wallets (for example, MetaMask or a compatible browser wallet) on Base (chain ID 8453). The user signs an EIP-4361 message; this is an off-chain authentication signature, not a transaction, and it does not spend gas.
 
-The server issues a short-lived, HTTP-only nonce cookie, validates the SIWE message against the request host/origin, nonce, expiration, version, and Base chain ID, then establishes a normal Supabase Auth session. The server accepts the newer `SUPABASE_SECRET_KEY` environment variable, with the legacy service-role variable retained as a fallback. Wallet-only identities are provisioned server-side with a reserved synthetic email and a deterministic password derived from the wallet address plus `WALLET_AUTH_SECRET`; the secret never reaches the browser.
+The server stores only a SHA-256 hash of each short-lived SIWE nonce in a server-only table, binds it to an HTTP-only cookie, validates the request host/origin, nonce, expiration, version, and Base chain ID, and atomically consumes the nonce to prevent replay. After signature verification, it provisions the reserved wallet identity when needed and exchanges a server-generated, one-time Supabase magic-link token hash for a normal Supabase Auth session. No deterministic wallet password or `WALLET_AUTH_SECRET` is used.
 
 Required Vercel server environment variables:
 - `SUPABASE_SECRET_KEY` — create a dedicated Trustchain secret API key (preferred), or use the legacy `service_role` key as `SUPABASE_SERVICE_ROLE_KEY`; server-only.
-- `WALLET_AUTH_SECRET` — generate a random value of at least 32 characters (for example, `openssl rand -hex 32`). Keep it stable; changing it without a wallet-account credential migration will prevent existing wallet identities from signing in.
 
 Do not paste either secret into chat, GitHub, source files, or any `NEXT_PUBLIC_*` variable. Add them directly in the Trustchain Vercel project's Environment Variables, then redeploy. This initial wallet flow targets Base and injected browser wallets; WalletConnect/mobile deep-link support and broader chain selection are future work. Wallet accounts still need organization membership before they can access tenant-owned records.
