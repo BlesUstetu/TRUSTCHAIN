@@ -5,6 +5,7 @@ import { SiweMessage } from "siwe";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { getAddress } from "viem";
+import { enforceSiweRateLimit } from "@/lib/auth/siwe-rate-limit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -17,6 +18,20 @@ export async function POST(request: NextRequest) {
   const origin = request.headers.get("origin");
   if (!origin || origin !== request.nextUrl.origin) {
     return NextResponse.json({ error: "Invalid request origin." }, { status: 403 });
+  }
+
+  const rateLimit = await enforceSiweRateLimit(request, "verify", 8, 600);
+  if (!rateLimit.allowed) {
+    return NextResponse.json(
+      { error: rateLimit.error ?? "Too many wallet verification attempts. Please wait and try again." },
+      { status: rateLimit.error ? 503 : 429 },
+      { headers: { "Cache-Control": "no-store" } }
+    );
+  }
+
+  const contentLength = Number(request.headers.get("content-length") ?? "0");
+  if (Number.isFinite(contentLength) && contentLength > 8192) {
+    return NextResponse.json({ error: "Request body is too large." }, { status: 413 });
   }
 
   const nonce = request.cookies.get("trustchain-siwe-nonce")?.value;
@@ -32,7 +47,7 @@ export async function POST(request: NextRequest) {
   }
 
   if (typeof body.message !== "string" || body.message.length > 4096 ||
-      typeof body.signature !== "string" || !/^0x[0-9a-fA-F]+$/.test(body.signature)) {
+      typeof body.signature !== "string" || body.signature.length > 2048 || !/^0x[0-9a-fA-F]+$/.test(body.signature)) {
     return NextResponse.json({ error: "Invalid SIWE message or signature." }, { status: 400 });
   }
 
