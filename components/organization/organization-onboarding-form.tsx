@@ -89,9 +89,9 @@ export function OrganizationOnboardingForm({ email }: { email: string }) {
             autoComplete="organization"
           />
 
-          <label htmlFor="organization-slug">Workspace URL</label>
+          <label htmlFor="organization-slug">Workspace slug</label>
           <div className="onboarding-slug-row">
-            <span>trustchain.app/</span>
+            <span aria-hidden="true">trustchain /</span>
             <input
               id="organization-slug"
               value={slug}
