@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { SiweMessage } from "siwe";
 import { base } from "viem/chains";
-import { createWalletClient, custom, isAddress } from "viem";
+import { createWalletClient, custom, getAddress, isAddress } from "viem";
 
 type EthereumProvider = { request(args: { method: string; params?: unknown[] | object }): Promise<unknown> };
 declare global { interface Window { ethereum?: EthereumProvider } }
@@ -32,8 +32,12 @@ export function WalletLoginButton() {
     setError("");
     try {
       const accounts = await window.ethereum.request({ method: "eth_requestAccounts" }) as string[];
-      const address = accounts?.[0];
-      if (!address || !isAddress(address)) throw new Error("The connected wallet returned an invalid address.");
+      const rawAddress = accounts?.[0];
+      if (!rawAddress || !isAddress(rawAddress, { strict: false })) {
+        throw new Error("The connected wallet returned an invalid address.");
+      }
+      // Normalize valid lowercase or mixed-case wallet addresses to EIP-55 checksum form.
+      const address = getAddress(rawAddress);
 
       const chainId = await window.ethereum.request({ method: "eth_chainId" }) as string;
       if (Number.parseInt(chainId, 16) !== base.id) {
