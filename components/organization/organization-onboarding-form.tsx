@@ -2,6 +2,7 @@
 
 import { useMemo, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 function makeSlug(value: string) {
@@ -61,10 +62,10 @@ export function OrganizationOnboardingForm({ email }: { email: string }) {
   return (
     <main className="auth-page onboarding-page">
       <section className="auth-card onboarding-card">
-        <a href="/" className="auth-brand">
+        <Link href="/" className="auth-brand">
           <span className="brand-mark">T</span>
           <span>TRUSTCHAIN</span>
-        </a>
+        </Link>
         <div className="eyebrow">FIRST-TIME SETUP · WORKSPACE</div>
         <h1 className="auth-title">Create your organization</h1>
         <p className="muted text-sm">
