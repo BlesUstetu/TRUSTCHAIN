@@ -38,7 +38,7 @@ create index if not exists siwe_nonces_expiry_idx
   on public.siwe_nonces (expires_at);
 
 alter table public.siwe_nonces enable row level security;
-revoke all on table public.siwe_nonces from anon, authenticated;
+revoke all on table public.siwe_nonces from public, anon, authenticated;
 grant all on table public.siwe_nonces to service_role;
 
 comment on table public.siwe_nonces is
