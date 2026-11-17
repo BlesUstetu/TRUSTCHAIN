@@ -219,3 +219,30 @@ button, a { -webkit-tap-highlight-color: transparent; }
   font-size: 0.75rem;
   text-align: center;
 }
+
+
+/* Organization onboarding */
+.onboarding-page { padding-top: 38px; padding-bottom: 38px; }
+.onboarding-card { width: min(100%, 520px); }
+.onboarding-account {
+  display: grid; gap: 5px; margin-top: 23px; padding: 13px 14px;
+  border: 1px solid var(--border); border-radius: 10px; background: rgba(255,255,255,.025);
+}
+.onboarding-account-label { color: #8190a1; font-size: 9px; font-weight: 750; letter-spacing: .12em; }
+.onboarding-account-email { color: #dce5ed; font-size: 12px; overflow-wrap: anywhere; }
+.onboarding-slug-row {
+  display: flex; align-items: center; gap: 8px; border: 1px solid var(--border);
+  border-radius: 9px; padding-left: 12px; background: rgba(4,9,14,.72); color: #8493a4; font-size: 11px;
+}
+.onboarding-slug-row:focus-within { border-color: rgba(66,214,160,.65); box-shadow: 0 0 0 3px rgba(66,214,160,.08); }
+.onboarding-slug-row input { min-width: 0; border: 0; box-shadow: none !important; background: transparent; padding-left: 0; }
+.onboarding-slug-row input:focus { border: 0; }
+.onboarding-hint { margin: -3px 0 3px; color: #7d8b9b; font-size: 10px; }
+.onboarding-steps { display: grid; gap: 12px; margin-top: 27px; }
+.onboarding-steps > div { display: grid; grid-template-columns: 28px 1fr; column-gap: 10px; align-items: center; }
+.onboarding-steps span {
+  grid-row: span 2; display: grid; place-items: center; width: 26px; height: 26px;
+  border: 1px solid rgba(66,214,160,.25); border-radius: 8px; color: #8ce8bf; font-size: 9px; font-weight: 800;
+}
+.onboarding-steps strong { color: #dce5ed; font-size: 11px; }
+.onboarding-steps small { color: #8190a1; font-size: 10px; }
