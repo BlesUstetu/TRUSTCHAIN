@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
     const address = getAddress(verification.data.address);
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const anonKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const serviceRoleKey = process.env.SUPABASE_SECRET_KEY ?? process.env.SUPABASE_SERVICE_ROLE_KEY;
     const walletSecret = process.env.WALLET_AUTH_SECRET;
     if (!supabaseUrl || !anonKey || !serviceRoleKey || !walletSecret || walletSecret.length < 32) {
       return NextResponse.json({ error: "Wallet authentication is not configured on the server." }, { status: 503 });
