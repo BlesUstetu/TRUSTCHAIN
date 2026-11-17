@@ -16,7 +16,7 @@ The repository currently includes:
 - Project input validation and GitHub Actions CI.
 - Final multi-chain / hybrid-verification implementation blueprint.
 - API v1 contract and security model documentation.
-- Supabase migrations 0001–0005 for the core schema, EVM chain registry, verification/review tables, security grants, organization onboarding, tenant-policy correction, and server-only SIWE nonce storage and atomic SIWE rate limiting.
+- Supabase migrations 0001–0006 for the core schema, EVM chain registry, verification/review tables, security grants, organization onboarding, tenant-policy correction, and server-only SIWE nonce storage and atomic SIWE rate limiting.
 
 The dashboard still contains illustrative demo metrics. Organization onboarding is implemented in the current feature branch. Project CRUD, team invitations/management, live indexing, verification workflows, notifications, public passport publishing, and billing are not complete. Email/social authentication requires Supabase provider configuration. Wallet authentication additionally requires the dedicated server-only Supabase secret key in Vercel.
 
