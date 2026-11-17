@@ -204,3 +204,18 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .auth-url-message { margin: 18px 0 0; border: 1px solid rgba(240,120,120,.2); border-radius: 9px; padding: 10px 12px; background: rgba(240,120,120,.06); }
 .auth-error, .auth-notice { overflow-wrap: anywhere; }
 .oauth-button:focus-visible { outline-offset: 2px; }
+
+
+.wallet-auth {
+  display: grid;
+  gap: 8px;
+  margin-top: 18px;
+}
+.wallet-auth-button { border-color: rgba(95, 220, 170, 0.45); }
+.wallet-auth-mark { color: #72e5b5; font-size: 1.2rem; line-height: 1; }
+.wallet-auth-caption {
+  margin: 0;
+  color: var(--muted, #8b95a7);
+  font-size: 0.75rem;
+  text-align: center;
+}
