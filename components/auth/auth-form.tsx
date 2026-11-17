@@ -76,7 +76,7 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
     setNotice("");
     try {
       const supabase = createSupabaseBrowserClient();
-      const redirectTo = new URL("/auth/callback", window.location.origin);
+      const redirectTo = new URL("/auth/confirm", window.location.origin);
       redirectTo.searchParams.set("next", "/reset-password");
       const { error: resetError } = await supabase.auth.resetPasswordForEmail(email.trim(), {
         redirectTo: redirectTo.toString()
