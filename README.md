@@ -16,9 +16,9 @@ The repository currently includes:
 - Project input validation and GitHub Actions CI.
 - Final multi-chain / hybrid-verification implementation blueprint.
 - API v1 contract and security model documentation.
-- Supabase migration 0002 for EVM chain registry, project networks, verification runs/reviews, public passport snapshots, worker cursors/jobs, and audit logs.
+- Supabase migrations 0001–0004 for the core schema, EVM chain registry, verification/review tables, security grants, and secure initial organization onboarding.
 
-The dashboard still contains illustrative demo metrics. Project CRUD, organization onboarding, live indexing, verification workflows, notifications, public passport publishing, and billing are not complete. Email/social authentication requires Supabase provider configuration. Wallet authentication additionally requires the server-only service-role key and WALLET_AUTH_SECRET to be configured in Vercel.
+The dashboard still contains illustrative demo metrics. Organization onboarding is implemented in the current feature branch. Project CRUD, team invitations/management, live indexing, verification workflows, notifications, public passport publishing, and billing are not complete. Email/social authentication requires Supabase provider configuration. Wallet authentication additionally requires the server-only service-role key and WALLET_AUTH_SECRET to be configured in Vercel.
 
 ## Architecture decisions
 
@@ -76,6 +76,8 @@ Never expose server-only values through NEXT_PUBLIC variables or commit them to 
 Create a dedicated Trustchain Supabase project. Apply migrations in order:
 1. supabase/migrations/0001_initial_schema.sql
 2. supabase/migrations/0002_multichain_hybrid_verification.sql
+3. supabase/migrations/0003_security_hardening_function_grants.sql
+4. supabase/migrations/0004_organization_onboarding.sql
 
 Do not apply these migrations to UStetu's database. The service-role key must remain server-side. Keep RLS enabled; do not disable policies to make the preview work.
 
