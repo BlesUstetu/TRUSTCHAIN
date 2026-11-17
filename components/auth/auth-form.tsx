@@ -145,7 +145,9 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
             : "Start organizing project evidence and on-chain transparency."}
         </p>
 
-        {initialErrorMessage && <p className="auth-error auth-url-message" role="alert">{initialErrorMessage}</p>}\n\n        <div className="oauth-stack" aria-label="Continue with a social account">
+        {initialErrorMessage && <p className="auth-error auth-url-message" role="alert">{initialErrorMessage}</p>}
+
+        <div className="oauth-stack" aria-label="Continue with a social account">
           {providers.map((provider) => (
             <button
               key={provider.id}
