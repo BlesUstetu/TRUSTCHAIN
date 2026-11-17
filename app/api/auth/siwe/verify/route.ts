@@ -24,8 +24,7 @@ export async function POST(request: NextRequest) {
   if (!rateLimit.allowed) {
     return NextResponse.json(
       { error: rateLimit.error ?? "Too many wallet verification attempts. Please wait and try again." },
-      { status: rateLimit.error ? 503 : 429 },
-      { headers: { "Cache-Control": "no-store" } }
+      { status: rateLimit.error ? 503 : 429, headers: { "Cache-Control": "no-store" } }
     );
   }
 
