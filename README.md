@@ -10,14 +10,15 @@ Trustchain is an independent application with its own repository, Supabase proje
 
 The repository currently includes:
 - Next.js 15 / React 19 / TypeScript / Tailwind dashboard preview.
-- Supabase browser/server clients with cookie-based SSR session refresh, email/password sign-in, Google/GitHub/Discord OAuth sign-in flows, email confirmation callback, and protected dashboard routing.
+- Supabase browser/server clients with cookie-based SSR sessions, email/password and Google/GitHub/Discord OAuth flows, password recovery, and protected dashboard routing.
+- Base-first Sign-In with Ethereum (SIWE) wallet authentication using a one-time nonce, domain/origin binding, signature verification, and a Supabase session.
 - Read-only Base bytecode-presence helper using viem.
 - Project input validation and GitHub Actions CI.
 - Final multi-chain / hybrid-verification implementation blueprint.
 - API v1 contract and security model documentation.
 - Supabase migration 0002 for EVM chain registry, project networks, verification runs/reviews, public passport snapshots, worker cursors/jobs, and audit logs.
 
-The dashboard still contains illustrative demo metrics. Project CRUD, organization onboarding, live indexing, verification workflows, notifications, public passport publishing, and billing are not complete. Authentication requires a dedicated Supabase project, enabled OAuth providers, provider credentials, and redirect configuration.
+The dashboard still contains illustrative demo metrics. Project CRUD, organization onboarding, live indexing, verification workflows, notifications, public passport publishing, and billing are not complete. Email/social authentication requires Supabase provider configuration. Wallet authentication additionally requires the server-only service-role key and WALLET_AUTH_SECRET to be configured in Vercel.
 
 ## Architecture decisions
 
@@ -54,6 +55,7 @@ Public:
 
 Server-only:
 - SUPABASE_SERVICE_ROLE_KEY
+- WALLET_AUTH_SECRET (minimum 32 characters; stable across deployments)
 - BASE_RPC_URL
 - ETHEREUM_RPC_URL
 - BNB_RPC_URL
@@ -105,3 +107,16 @@ See the final implementation blueprint for phased tasks, acceptance criteria, AP
 ## License
 
 Proprietary until a license is explicitly added.
+
+
+### Wallet sign-in (Base / SIWE)
+
+The login page includes a wallet option for injected EVM wallets (for example, MetaMask or a compatible browser wallet) on Base (chain ID 8453). The user signs an EIP-4361 message; this is an off-chain authentication signature, not a transaction, and it does not spend gas.
+
+The server issues a short-lived, HTTP-only nonce cookie, validates the SIWE message against the request host/origin, nonce, expiration, version, and Base chain ID, then establishes a normal Supabase Auth session. Wallet-only identities are provisioned server-side with a reserved synthetic email and a deterministic password derived from the wallet address plus `WALLET_AUTH_SECRET`; the secret never reaches the browser.
+
+Required Vercel server environment variables:
+- `SUPABASE_SERVICE_ROLE_KEY` — the dedicated Trustchain Supabase service-role secret; server-only.
+- `WALLET_AUTH_SECRET` — generate a random value of at least 32 characters (for example, `openssl rand -hex 32`). Keep it stable; changing it without a wallet-account credential migration will prevent existing wallet identities from signing in.
+
+Do not paste either secret into chat, GitHub, source files, or any `NEXT_PUBLIC_*` variable. Add them directly in the Trustchain Vercel project's Environment Variables, then redeploy. This initial wallet flow targets Base and injected browser wallets; WalletConnect/mobile deep-link support and broader chain selection are future work. Wallet accounts still need organization membership before they can access tenant-owned records.
