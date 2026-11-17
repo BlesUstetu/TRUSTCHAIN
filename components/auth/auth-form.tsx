@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FormEvent, useState } from "react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
+import { WalletLoginButton } from "@/components/auth/wallet-login-button";
 
 type AuthMode = "login" | "signup";
 type OAuthProvider = "google" | "github" | "discord";
@@ -161,6 +162,8 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
             </button>
           ))}
         </div>
+
+        <WalletLoginButton />
 
         <div className="auth-divider"><span>or continue with email</span></div>
 
