@@ -1,3 +1,5 @@
+import { redirect } from "next/navigation";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { SignOutButton } from "@/components/auth/sign-out-button";
 import {
   Activity, Bell, Blocks, Check, ChevronRight, Clock3, FileCheck2, Fingerprint,
@@ -21,7 +23,22 @@ function NavItem({ icon: Icon, label, active = false }: { icon: LucideIcon; labe
   return <a className={`nav-item ${active ? "active" : ""}`} href={active ? "/" : "#"}><Icon size={16} strokeWidth={1.7}/>{label}</a>;
 }
 
-export default function Home() {
+export default async function Home() {
+  const supabase = await createSupabaseServerClient();
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
+  if (userError || !user) redirect("/login");
+
+  const { data: memberships, error: membershipError } = await supabase
+    .from("organization_members")
+    .select("organization_id")
+    .eq("user_id", user.id)
+    .limit(1);
+
+  if (membershipError) {
+    throw new Error("Unable to load workspace membership. Please try again.");
+  }
+  if (!memberships?.length) redirect("/onboarding");
+
   return (
     <div className="app-shell">
       <aside className="sidebar">
