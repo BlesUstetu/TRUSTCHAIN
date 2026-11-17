@@ -96,6 +96,16 @@ After the dedicated Trustchain Supabase project exists:
 
 The app calls `signInWithOAuth` and returns through `/auth/callback`. OAuth provider credentials and allow-list settings are still pending; the buttons will show a provider/configuration error until the dedicated Supabase project is configured.
 
+### Password recovery across devices
+
+Password recovery uses Supabase's one-time recovery token hash at `/auth/confirm`, rather than a PKCE verifier stored only in the browser that requested the email. To complete this flow, customize the **Reset Password** email template in the dedicated Supabase project's **Authentication → Email Templates**:
+
+```html
+<a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=recovery&next=/reset-password">Reset password</a>
+```
+
+Keep the link's `token_hash` and `type=recovery` parameters intact. The callback verifies the token server-side, establishes the recovery session, and redirects to the password form. The token is single-use and expires according to the Supabase email OTP settings.
+
 ## Verification limitations
 
 The Base helper currently checks only whether bytecode exists at an address. Bytecode presence is not source verification, an audit, or a safety assessment. Every production check must preserve its method, subject, chain, block/time, source, engine version, and limitations.
