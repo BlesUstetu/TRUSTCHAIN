@@ -52,7 +52,7 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
     try {
       const supabase = createSupabaseBrowserClient();
       const redirectTo = new URL("/auth/callback", window.location.origin);
-      redirectTo.searchParams.set("next", safeNextPath(searchParams.get("next")));
+      redirectTo.searchParams.set("next", safeNextPath(searchParams.get("next") ?? "/onboarding"));
       const { error: authError } = await supabase.auth.signInWithOAuth({
         provider,
         options: { redirectTo: redirectTo.toString() }
@@ -111,12 +111,12 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
           email: email.trim(),
           password,
           options: {
-            emailRedirectTo: `${window.location.origin}/auth/callback?next=/`
+            emailRedirectTo: `${window.location.origin}/auth/callback?next=/onboarding`
           }
         });
         if (authError) throw authError;
         if (data.session) {
-          router.replace("/");
+          router.replace("/onboarding");
           router.refresh();
         } else {
           setNotice("Account created. Check your email to confirm your address before signing in.");
