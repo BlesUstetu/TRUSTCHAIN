@@ -180,3 +180,27 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .oauth-mark-discord { color: #c4b5fd; background: rgba(88,101,242,.16); }
 .auth-divider { display: flex; align-items: center; gap: 12px; margin: 19px 0 0; color: #758294; font-size: 10px; white-space: nowrap; }
 .auth-divider::before, .auth-divider::after { content: ""; height: 1px; flex: 1; background: var(--border); }
+
+
+/* Auth form accessibility and password recovery controls */
+
+.auth-form input:focus-visible, .oauth-button:focus-visible, .button:focus-visible,
+.password-toggle:focus-visible, .forgot-password:focus-visible, .auth-switch a:focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: 3px;
+}
+.auth-password-row { position: relative; display: flex; align-items: center; }
+.auth-password-row input { padding-right: 70px; }
+.password-toggle {
+  position: absolute; right: 8px; border: 0; border-radius: 6px; padding: 6px 8px;
+  background: transparent; color: #8ce8bf; font-size: 11px; font-weight: 700; cursor: pointer;
+}
+.password-toggle:hover { background: rgba(66,214,160,.09); }
+.forgot-password {
+  justify-self: end; border: 0; padding: 3px 0; background: transparent;
+  color: #8ce8bf; font-size: 11px; font-weight: 650; cursor: pointer;
+}
+.forgot-password:disabled { opacity: .55; cursor: wait; }
+.auth-url-message { margin: 18px 0 0; border: 1px solid rgba(240,120,120,.2); border-radius: 9px; padding: 10px 12px; background: rgba(240,120,120,.06); }
+.auth-error, .auth-notice { overflow-wrap: anywhere; }
+.oauth-button:focus-visible { outline-offset: 2px; }
